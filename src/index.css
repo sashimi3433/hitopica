@@ -452,3 +452,77 @@ body {
 .spin {
   animation: spin 1s linear infinite;
 }
+
+/* アコーディオンメニュー（フラットデザイン） */
+.accordion-wrapper {
+  border: 2px solid var(--border-light);
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: var(--bg-card);
+  text-align: left;
+}
+
+.accordion-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background-color: #f8fafc;
+  border: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.accordion-header:hover {
+  background-color: #f1f5f9;
+}
+
+.accordion-body {
+  padding: 16px 18px;
+  border-top: 2px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: #ffffff;
+}
+
+.slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slider-label {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  gap: 6px;
+}
+
+.slider-icon {
+  flex-shrink: 0;
+}
+
+.slider-value {
+  margin-left: auto;
+  font-family: monospace;
+  font-size: 0.9rem;
+  background-color: #f1f5f9;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border-light);
+  color: var(--color-primary);
+}
+
+.btn-small {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+}
+

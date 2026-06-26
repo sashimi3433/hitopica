@@ -7,16 +7,29 @@ import {
   Image as ImageIcon, 
   ArrowLeft,
   Eye,
-  Info
+  Info,
+  ChevronDown,
+  ChevronUp,
+  Sun,
+  Flame,
+  Layers,
+  Palette
 } from 'lucide-react';
 
 // お手本用のデフォルト画像（美しいポートレート）
 const DEMO_IMAGE_URL = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=1200';
 
-// 固定のHDR発光パラメータ
-const HDR_PARAMS = {
+interface HdrParams {
+  glowStrength: number;  // 発光強度 (0.0 ~ 3.0)
+  glowRadius: number;    // 発光半径 (0 ~ 120px)
+  exposure: number;      // 人物露出 (0.5 ~ 2.5)
+  saturation: number;    // 人物彩度 (0.0 ~ 2.5)
+  threshold: number;     // 輝度しきい値 (0.0 ~ 1.0)
+}
+
+const DEFAULT_PARAMS: HdrParams = {
   glowStrength: 1.6,   // 光の強さ
-  glowRadius: 45,      // 光の広がり (ピクセル)
+  glowRadius: 45,      // 光の広がり
   exposure: 1.3,       // 人物の明るさ
   saturation: 1.25,    // 人物の色鮮やかさ
   threshold: 0.18      // 光らせる基準（明るい部分を優先）
@@ -39,6 +52,10 @@ export default function App() {
   // 処理結果と表示制御
   const [maskCanvas, setMaskCanvas] = useState<HTMLCanvasElement | null>(null);
   const [showOriginal, setShowOriginal] = useState(false); // 元画像表示フラグ
+  const [isAccordionOpen, setIsAccordionOpen] = useState(false); // アコーディオンの開閉
+
+  // 動的なパラメータ調整
+  const [params, setParams] = useState<HdrParams>(DEFAULT_PARAMS);
 
   // 参照
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -165,7 +182,7 @@ export default function App() {
     runSegmentation();
   }, [imageEl, segmenter]);
 
-  // 3. 描画パイプライン（自動でHDR発光効果を適用）
+  // 3. 描画パイプライン（調整パラメータを動的に反映）
   useEffect(() => {
     if (!imageEl || !canvasRef.current || !maskCanvas) return;
 
@@ -201,7 +218,7 @@ export default function App() {
       bCtx.drawImage(personCanvas, 0, 0);
       const imgData = bCtx.getImageData(0, 0, width, height);
       const data = imgData.data;
-      const thresholdVal = HDR_PARAMS.threshold * 255;
+      const thresholdVal = params.threshold * 255;
 
       for (let i = 0; i < data.length; i += 4) {
         const r = data[i];
@@ -232,7 +249,7 @@ export default function App() {
     adjustedPersonCanvas.height = height;
     const apCtx = adjustedPersonCanvas.getContext('2d');
     if (apCtx) {
-      apCtx.filter = `brightness(${HDR_PARAMS.exposure * 100}%) saturate(${HDR_PARAMS.saturation * 100}%)`;
+      apCtx.filter = `brightness(${params.exposure * 100}%) saturate(${params.saturation * 100}%)`;
       apCtx.drawImage(personCanvas, 0, 0);
     }
 
@@ -245,19 +262,19 @@ export default function App() {
     glowCanvas.height = height;
     const gCtx = glowCanvas.getContext('2d');
 
-    if (gCtx && HDR_PARAMS.glowRadius > 0) {
-      gCtx.globalAlpha = HDR_PARAMS.glowStrength;
+    if (gCtx && params.glowRadius > 0) {
+      gCtx.globalAlpha = params.glowStrength;
       
       // 広範囲の光
-      gCtx.filter = `blur(${HDR_PARAMS.glowRadius}px)`;
+      gCtx.filter = `blur(${params.glowRadius}px)`;
       gCtx.drawImage(brightCanvas, 0, 0);
       
       // 中範囲の光
-      gCtx.filter = `blur(${HDR_PARAMS.glowRadius * 0.4}px)`;
+      gCtx.filter = `blur(${params.glowRadius * 0.4}px)`;
       gCtx.drawImage(brightCanvas, 0, 0);
 
       // コアの強い光
-      gCtx.filter = `blur(${HDR_PARAMS.glowRadius * 0.1}px)`;
+      gCtx.filter = `blur(${params.glowRadius * 0.1}px)`;
       gCtx.drawImage(brightCanvas, 0, 0);
     }
 
@@ -267,7 +284,15 @@ export default function App() {
     ctx.drawImage(glowCanvas, 0, 0);
     ctx.restore();
 
-  }, [imageEl, maskCanvas]);
+  }, [imageEl, maskCanvas, params]);
+
+  // パらメータ変更時のハンドラ
+  const handleParamChange = (key: keyof HdrParams, value: number) => {
+    setParams(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
 
   // ファイルの読み込み
   const loadImage = (file: File) => {
@@ -339,6 +364,8 @@ export default function App() {
     setMaskCanvas(null);
     setAspectRatio(null);
     setShowOriginal(false);
+    setParams(DEFAULT_PARAMS);
+    setIsAccordionOpen(false);
   };
 
   return (
@@ -367,7 +394,7 @@ export default function App() {
             <h2>読み込みエラー</h2>
             <p>{modelError}</p>
             <button className="btn btn-primary btn-large" onClick={() => window.location.reload()}>
-              もう一度やり直す
+              もう一度やり長す
             </button>
           </div>
         </div>
@@ -492,6 +519,100 @@ export default function App() {
                   <Eye size={20} style={{ marginRight: '10px' }} />
                   {showOriginal ? '光る写真にする' : '元の写真と見比べる'}
                 </button>
+
+                {/* アコーディオンによる微調整（最初折りたたみ） */}
+                {maskCanvas && (
+                  <div className="accordion-wrapper">
+                    <button 
+                      className="accordion-header"
+                      onClick={() => setIsAccordionOpen(!isAccordionOpen)}
+                    >
+                      <span>さらに細かく調整する</span>
+                      {isAccordionOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    </button>
+                    
+                    {isAccordionOpen && (
+                      <div className="accordion-body">
+                        
+                        {/* 1. 光の強さ */}
+                        <div className="slider-group">
+                          <label className="slider-label">
+                            <Flame size={14} className="slider-icon text-neon-pink" />
+                            光の強さ:
+                            <span className="slider-value">{params.glowStrength.toFixed(1)}</span>
+                          </label>
+                          <input 
+                            type="range" 
+                            min="0" 
+                            max="3.0" 
+                            step="0.1" 
+                            value={params.glowStrength} 
+                            onChange={(e) => handleParamChange('glowStrength', parseFloat(e.target.value))}
+                          />
+                        </div>
+
+                        {/* 2. 光の広がり */}
+                        <div className="slider-group">
+                          <label className="slider-label">
+                            <Layers size={14} className="slider-icon text-neon-cyan" />
+                            光の広がり:
+                            <span className="slider-value">{params.glowRadius}px</span>
+                          </label>
+                          <input 
+                            type="range" 
+                            min="0" 
+                            max="120" 
+                            step="5" 
+                            value={params.glowRadius} 
+                            onChange={(e) => handleParamChange('glowRadius', parseInt(e.target.value))}
+                          />
+                        </div>
+
+                        {/* 3. 人物の明るさ */}
+                        <div className="slider-group">
+                          <label className="slider-label">
+                            <Sun size={14} className="slider-icon text-neon-green" />
+                            人物の明るさ:
+                            <span className="slider-value">x{params.exposure.toFixed(1)}</span>
+                          </label>
+                          <input 
+                            type="range" 
+                            min="0.5" 
+                            max="2.2" 
+                            step="0.1" 
+                            value={params.exposure} 
+                            onChange={(e) => handleParamChange('exposure', parseFloat(e.target.value))}
+                          />
+                        </div>
+
+                        {/* 4. 色の鮮やかさ */}
+                        <div className="slider-group">
+                          <label className="slider-label">
+                            <Palette size={14} className="slider-icon text-neon-purple" />
+                            色の鮮やかさ:
+                            <span className="slider-value">x{params.saturation.toFixed(1)}</span>
+                          </label>
+                          <input 
+                            type="range" 
+                            min="0.0" 
+                            max="2.0" 
+                            step="0.1" 
+                            value={params.saturation} 
+                            onChange={(e) => handleParamChange('saturation', parseFloat(e.target.value))}
+                          />
+                        </div>
+
+                        <button 
+                          className="btn btn-secondary btn-small w-full"
+                          onClick={() => setParams(DEFAULT_PARAMS)}
+                          style={{ padding: '8px', fontSize: '0.85rem', marginTop: '8px' }}
+                        >
+                          調整を元に戻す
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <button 
                   className="btn btn-outline btn-large" 
