@@ -1,0 +1,454 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+:root {
+  font-family: 'Noto Sans JP', 'Outfit', system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+
+  color-scheme: light;
+  color: #2c3e50;
+  background-color: #f8fafc; /* 完全フラットな明るいブルーグレー */
+
+  --color-primary: #1e3a8a; /* 深いネイビー */
+  --color-primary-hover: #172554; /* ホバー時はさらに深めのネイビー */
+  --color-primary-light: #eff6ff;
+  
+  --color-secondary: #0d9488; /* ティールグリーン */
+  --color-secondary-hover: #115e59;
+  
+  --bg-app: #f1f5f9; /* 完全にフラットな背景色 */
+  --bg-card: #ffffff;
+  --border-light: #cbd5e1; /* フラットデザインの輪郭をはっきりさせるため、少し濃いめ */
+  --text-dark: #0f172a;
+  --text-muted: #475569;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg-app);
+}
+
+/* アプリ全体のコンテナ */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+  gap: 20px;
+}
+
+/* ヘッダー */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-light); /* フラットな太めの実線 */
+  border-radius: 16px;
+  box-shadow: none; /* 影はなし */
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-icon {
+  color: var(--color-primary);
+}
+
+.header-brand h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.header-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* メインエリア */
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 写真選択前の初期画面 */
+.welcome-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 24px;
+  padding: 20px 0;
+}
+
+/* アップロードカード */
+.upload-card {
+  width: 100%;
+  max-width: 580px;
+  padding: 60px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 2px dashed var(--border-light); /* フラットな境界線 */
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  text-align: center;
+  box-shadow: none;
+}
+
+.upload-card:hover, .upload-card.dragging {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+  /* 浮き上がり(transform)や影は一切なし */
+}
+
+.upload-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 2px solid var(--border-light);
+  margin-bottom: 24px;
+  transition: background-color 0.2s ease;
+}
+
+.upload-card:hover .upload-circle {
+  background: #dbeafe;
+  border-color: var(--color-primary);
+  /* 拡大（scale）もなし */
+}
+
+.upload-icon-arrow {
+  color: var(--color-primary);
+}
+
+.upload-card h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text-dark);
+}
+
+.upload-card p {
+  color: var(--text-muted);
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.upload-tip {
+  font-size: 0.85rem;
+  color: var(--color-secondary);
+  font-weight: 500;
+}
+
+.demo-area {
+  margin-top: 10px;
+}
+
+/* 結果画面のレイアウト */
+.result-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .result-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 画像プレビューカード */
+.preview-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border-light); /* フラットな太めの実線 */
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.preview-container {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--border-light);
+  background: #f8fafc;
+}
+
+.preview-wrapper {
+  position: relative;
+  width: 100%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.preview-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: opacity 0.15s ease-in-out;
+  pointer-events: none;
+}
+
+.base-image {
+  z-index: 2;
+}
+
+.processed-canvas {
+  z-index: 1;
+}
+
+/* 処理中ローダー */
+.processing-indicator {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* 状態バッジ */
+.image-badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  padding: 6px 14px;
+  background: var(--text-dark);
+  color: #fff;
+  border-radius: 8px; /* 丸みも少しフラット寄りに */
+  font-size: 0.85rem;
+  font-weight: 700;
+  z-index: 5;
+}
+
+.preview-help {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  justify-content: center;
+}
+
+.help-icon {
+  color: var(--color-secondary);
+}
+
+/* 操作パネル */
+.action-panel {
+  background: var(--bg-card);
+  border: 2px solid var(--border-light); /* フラットな太めの実線 */
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ボタン */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+  border: 2px solid transparent; /* 境界線を2px実線に変更 */
+  text-decoration: none;
+  user-select: none;
+}
+
+.btn-large {
+  padding: 16px 24px;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border-color: var(--color-primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  /* 浮き上がりや影はなし */
+}
+
+.btn-primary:disabled {
+  background-color: #cbd5e1;
+  border-color: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* 影を廃止するため、btn-shadowの影指定を削除 */
+.btn-shadow {
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border-color: var(--border-light);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #dbeafe;
+  border-color: var(--color-primary);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--text-muted);
+  border-color: var(--border-light);
+}
+
+.btn-outline:hover {
+  background-color: #f1f5f9;
+  color: var(--text-dark);
+  border-color: var(--text-dark);
+}
+
+.safety-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* 初回ダウンロード時の準備画面 */
+.loader-overlay, .error-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(241, 245, 249, 0.95); /* フラットな背景 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.loader-card, .error-card {
+  background: var(--bg-card);
+  border: 2px solid var(--border-light); /* フラットな太めの実線 */
+  border-radius: 24px;
+  padding: 40px 30px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  box-shadow: none; /* 影はなし */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loader-card h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-top: 20px;
+  margin-bottom: 12px;
+  color: var(--text-dark);
+}
+
+.loader-card p {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+/* 円形インジケータ */
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #e2e8f0;
+  border-left-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* 進捗バー */
+.progress-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-track {
+  width: 100%;
+  height: 10px;
+  background: #f1f5f9;
+  border-radius: 9999px;
+  overflow: hidden;
+  border: 2px solid var(--border-light);
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--color-primary);
+  border-radius: 9999px;
+  transition: width 0.2s ease-out;
+}
+
+.progress-text {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* アニメーション */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
